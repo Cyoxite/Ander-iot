@@ -1,0 +1,2 @@
+# PlatformIO device secrets
+devices/**/include/secrets.h
