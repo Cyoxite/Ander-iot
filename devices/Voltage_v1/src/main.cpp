@@ -11,6 +11,7 @@
 #endif
 
 #include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include <Adafruit_INA219.h>
 
@@ -44,24 +45,16 @@ static bool connectWiFi()
 
 static bool postVoltage(float voltageV, int rssi)
 {
-  if (WiFi.status() != WL_CONNECTED) {
-    return false;
-  }
+  if (WiFi.status() != WL_CONNECTED) return false;
 
-  WiFiClient client;
-#if defined(ARDUINO_ARCH_ESP8266)
-  HTTPClient http;
-#else
-  HTTPClient http;
-#endif
+  WiFiClientSecure client;
+  client.setInsecure(); // simplest; later you can pin cert
 
+  HTTPClient http;
   String url = String(MONITOR_BASE_URL) + "/api/ingest/" + String(DEVICE_UUID);
 
-  if (!http.begin(client, url)) {
-    return false;
-  }
+  if (!http.begin(client, url)) return false;
 
-  http.setTimeout(HTTP_TIMEOUT_MS);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-Device-Secret", DEVICE_SECRET);
 
@@ -135,5 +128,5 @@ void loop()
     Serial.printf("Ingest: %s\n", ok ? "OK" : "FAIL");
   }
 
-  delay(10);
+  delay(20);
 }
